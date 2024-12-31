@@ -143,8 +143,10 @@ void DXRenderer::LoadAssets()
 		UINT compileFlags = 0;
 #endif
 
-		ThrowIfFailed(D3DCompileFromFile(L"D:\\Workspace\\DXRT\\Assets\\Shaders\\shaders.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr));
-		ThrowIfFailed(D3DCompileFromFile(L"D:\\Workspace\\DXRT\\Assets\\Shaders\\shaders.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr));
+		std::wstring shaderPath = L"D:\\Workspace\\DXRT\\Assets\\Shaders\\shader.hlsl";
+
+		ThrowIfFailed(D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr));
+		ThrowIfFailed(D3DCompileFromFile(shaderPath.c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr));
 
 		// Vertex Input Layout
 		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -186,10 +188,13 @@ void DXRenderer::LoadAssets()
 
 		const UINT vertexBufferSize = sizeof(triangleVertices);
 
+		CD3DX12_HEAP_PROPERTIES heapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		CD3DX12_RESOURCE_DESC resourceDescBuffer = CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize);
+
 		ThrowIfFailed(mDevice->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			&heapProperties,
 			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
+			&resourceDescBuffer,
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&mVertexBuffer)
@@ -261,6 +266,7 @@ void DXRenderer::PopulateCommandList()
 	mCommandList->ResourceBarrier(1, &barrier);
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(mRtvHeap->GetCPUDescriptorHandleForHeapStart(), mFrameIndex, mRtvDescrptiorSize);
+	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	// Record Commands
 	const float clearColor[] = { 0.3f, 0.3f, 0.8f, 1.0f };
