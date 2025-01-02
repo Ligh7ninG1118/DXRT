@@ -13,4 +13,5 @@
 
 #include <wrl.h>
 #include <string>
+#include <vector>
 #include <shellapi.h>
